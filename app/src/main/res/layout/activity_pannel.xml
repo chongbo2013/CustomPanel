@@ -9,35 +9,36 @@
         android:id="@+id/mPanelBottonLayout"
         android:layout_width="match_parent"
         android:layout_height="280dip"
-        android:background="@android:color/background_dark"
-        android:orientation="vertical"
-        android:layout_gravity="bottom">
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
 
         <TextView
-            android:text="托盘"
+            android:id="@+id/tv_pallet"
             android:layout_width="match_parent"
             android:layout_height="48dip"
-            android:id="@+id/tv_pallet"
+            android:background="@android:color/holo_red_dark"
             android:gravity="center"
-            android:textColor="@android:color/white"
-            android:background="@android:color/holo_red_dark"/>
+            android:text="托盘"
+            android:textColor="@android:color/white" />
+
         <View
             android:id="@+id/first_layout"
             android:layout_width="match_parent"
             android:layout_height="0dip"
             android:layout_weight="1"
-            android:background="#ffd306"/>
+            android:background="#ffd306" />
+
         <View
             android:id="@+id/second_layout"
             android:layout_width="match_parent"
             android:layout_height="0dip"
             android:layout_weight="1"
-            android:background="#82d900"/>
+            android:background="#82d900" />
     </com.mx.panneltest.PanelBottonLayout>
 
     <Button
-        android:text="测试"
+        android:id="@+id/btn_test"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/btn_test" />
+        android:text="测试" />
 </FrameLayout>
