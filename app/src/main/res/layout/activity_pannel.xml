@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_pannel"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.mx.panneltest.PanelBottonLayout
+        android:id="@+id/mPanelBottonLayout"
+        android:layout_width="match_parent"
+        android:layout_height="280dip"
+        android:background="@android:color/background_dark"
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
+
+        <TextView
+            android:text="托盘"
+            android:layout_width="match_parent"
+            android:layout_height="48dip"
+            android:id="@+id/tv_pallet"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:background="@android:color/holo_red_dark"/>
+        <View
+            android:id="@+id/first_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dip"
+            android:layout_weight="1"
+            android:background="#ffd306"/>
+        <View
+            android:id="@+id/second_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dip"
+            android:layout_weight="1"
+            android:background="#82d900"/>
+    </com.mx.panneltest.PanelBottonLayout>
+
+    <Button
+        android:text="测试"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_test" />
+</FrameLayout>
