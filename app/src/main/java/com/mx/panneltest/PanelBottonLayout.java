@@ -6,10 +6,11 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
+import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.ViewTreeObserver;
 import android.view.animation.Interpolator;
 import android.widget.LinearLayout;
-import android.widget.Scroller;
 
 /**
  * 底部伸缩隐藏面板
@@ -34,11 +35,24 @@ public class PanelBottonLayout extends LinearLayout {
     private int mTouchSlop;
     private int mMinFlingSpeed;
     private int mMaxFlingSpeed;
-    //总的移动距离
-    float totalDeltal=0;
+    //总的移动距离，判断方向
+    float totalDeltal = 0;
+    //标记当前收缩状态
+    int currentPosition=0;
 
-    private Scroller mScroller;
+    private LauncherScroller mScroller;
     private VelocityTracker mVelocityTracker;
+
+//    private int parentHight=0;
+    public void target() {
+        currentPosition+=1;
+        if(currentPosition==3)
+            currentPosition=0;
+        snapToPostion(currentPosition);
+    }
+
+
+
     public static class ScrollInterpolator implements Interpolator {
         public ScrollInterpolator() {
         }
@@ -48,6 +62,29 @@ public class PanelBottonLayout extends LinearLayout {
             return t * t * t * t * t + 1;
         }
     }
+
+    public static class OvershootInterpolator implements Interpolator {
+        private static final float DEFAULT_TENSION = 1.3f;
+        private float mTension;
+
+        public OvershootInterpolator() {
+            mTension = DEFAULT_TENSION;
+        }
+
+        public void setDistance(int distance) {
+            mTension = distance > 0 ? DEFAULT_TENSION / distance : DEFAULT_TENSION;
+        }
+
+        public void disableSettle() {
+            mTension = 0.f;
+        }
+
+        public float getInterpolation(float t) {
+            t -= 1.0f;
+            return t * t * ((mTension + 1) * t + mTension) + 1.0f;
+        }
+    }
+
     public PanelBottonLayout(Context context) {
         super(context);
         init();
@@ -64,19 +101,26 @@ public class PanelBottonLayout extends LinearLayout {
     }
 
     void init() {
-
         ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mTouchSlop = configuration.getScaledTouchSlop();
         mMinFlingSpeed = configuration.getScaledMinimumFlingVelocity();
         mMaxFlingSpeed = configuration.getScaledMaximumFlingVelocity();
-        mScroller = new Scroller(getContext(),new ScrollInterpolator());
-        // 这里还是需要的。overScrollBy中会使用到
-        /**
-         * Because by default a layout does not need to draw,
-         * so an optimization is to not call is draw method. By calling setWillNotDraw(
-         * false) you tell the UI toolkit that you want to draw
-         */
-        setWillNotDraw(false); //必须！！！！
+        mScroller = new LauncherScroller(getContext(), new OvershootInterpolator());
+        setWillNotDraw(false);
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+//        if(getParent()!=null&&getParent() instanceof ViewGroup){
+//            ((ViewGroup)getParent()).getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+//                @Override
+//                public void onGlobalLayout() {
+//                    parentHight=((ViewGroup)getParent()).getMeasuredHeight();
+//                    getViewTreeObserver().removeGlobalOnLayoutListener(this);
+//                }
+//            });
+//        }
     }
 
     @Override
@@ -105,6 +149,8 @@ public class PanelBottonLayout extends LinearLayout {
         }
     }
 
+
+
     /**
      * 只进行判断是否可以进行拖动和初始化移动数据
      *
@@ -118,12 +164,13 @@ public class PanelBottonLayout extends LinearLayout {
             case MotionEvent.ACTION_DOWN:
                 int index = MotionEventCompat.getActionIndex(ev);
                 float y = MotionEventCompat.getY(ev, index);
+                float x = MotionEventCompat.getX(ev, index);
                 initVelocityTrackerIfNotExist();
                 mVelocityTracker.addMovement(ev);
                 mLastY = y;
                 mActivePointerId = MotionEventCompat.getPointerId(ev, index);
                 //分两种情况，一种是初始动作，一个是界面正在滚动，down触摸停止滚动
-                mIsBeingDragged = mScroller.isFinished();
+                mIsBeingDragged = false;
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 index = MotionEventCompat.getActionIndex(ev);
@@ -135,9 +182,10 @@ public class PanelBottonLayout extends LinearLayout {
                 //获取活跃手指
                 index = MotionEventCompat.findPointerIndex(ev, mActivePointerId);
                 y = MotionEventCompat.getY(ev, index);
+                x = MotionEventCompat.getX(ev, index);
                 //移动增量
                 final float yDiff = Math.abs(y - mLastY);
-                if (yDiff > mTouchSlop) {
+                if (yDiff > mTouchSlop&&isTouchOnButton(x,y)) {
                     //是滚动状态啦
                     mIsBeingDragged = true;
                     mLastY = y;
@@ -176,6 +224,17 @@ public class PanelBottonLayout extends LinearLayout {
     }
 
     /**
+     * 是否触摸在按钮上面
+     * @param x
+     * @param y
+     * @return
+     */
+    private  boolean isTouchOnButton(float x,float y){
+        int scrollY=Math.abs(getScrollY());
+        return y>=scrollY;
+    }
+
+    /**
      * @param event
      * @return
      */
@@ -184,17 +243,11 @@ public class PanelBottonLayout extends LinearLayout {
         if (mScroller == null) {
             return false;
         }
-
         initVelocityTrackerIfNotExist();
-        // ScrollView中设置了offsetLocation,这里需要设置吗？
         int action = MotionEventCompat.getActionMasked(event);
         int index = -1;
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                mIsBeingDragged = mScroller.isFinished();
-                if (mIsBeingDragged) {
-
-                }
                 if (!mScroller.isFinished()) { //fling
                     mScroller.abortAnimation();
                 }
@@ -212,10 +265,12 @@ public class PanelBottonLayout extends LinearLayout {
                     break;
                 }
                 float y = MotionEventCompat.getY(event, index);
+                float x = MotionEventCompat.getX(event, index);
                 float deltaY = mLastY - y;
 
-                if (!mIsBeingDragged && Math.abs(deltaY) > mTouchSlop) {
+                if (isTouchOnButton(x,y)&&!mIsBeingDragged && Math.abs(deltaY) > mTouchSlop) {
                     requestParentDisallowInterceptTouchEvent();
+
                     mIsBeingDragged = true;
                     // 减少滑动的距离
                     if (deltaY > 0) {
@@ -226,7 +281,7 @@ public class PanelBottonLayout extends LinearLayout {
                 }
 
                 if (mIsBeingDragged) {
-                    totalDeltal+=deltaY;
+                    totalDeltal += deltaY;
                     scrollTo(0, Math.min(Math.max(getScrollY() + (int) deltaY, -(layoutHight[1] + layoutHight[2])), 0));
                     mLastY = y;
                 }
@@ -245,8 +300,8 @@ public class PanelBottonLayout extends LinearLayout {
                     if (Math.abs(initialVelocity) > mMinFlingSpeed) {
                         // fling
                         doFling(-initialVelocity);
-                    }else{
-                        snapToDestination(totalDeltal<0);
+                    } else {
+                        snapToDestination(totalDeltal < 0);
 
                     }
                     endDrag();
@@ -257,47 +312,25 @@ public class PanelBottonLayout extends LinearLayout {
         if (mVelocityTracker != null) {
             mVelocityTracker.addMovement(event);
         }
-        return true;
+        return mIsBeingDragged;
     }
 
     private void snapToDestination(boolean isSnapDown) {
-//        int scrollY = getScrollY();
-//        int secondIndex=-layoutHight[2];
-//        int thirdIndex=-(layoutHight[1]+layoutHight[2]);
-//        if(isSnapDown) {
-//            if (scrollY <= 0 && scrollY > secondIndex) {
-//                mScroller.startScroll(0,getScrollY(),0, -layoutHight[2] - getScrollY());
-//                invalidate();
-//            }else if(scrollY<=secondIndex&&scrollY>thirdIndex){
-//                mScroller.startScroll(0,getScrollY(),0,  -(layoutHight[2] + layoutHight[1]) - getScrollY());
-//                invalidate();
-//            }
-//        }else{
-//             if(scrollY<=secondIndex&&scrollY>thirdIndex){
-//                mScroller.startScroll(0,getScrollY(),0,  -(layoutHight[2] + layoutHight[1]) - getScrollY());
-//                invalidate();
-//            }else if (scrollY <= 0 && scrollY > secondIndex) {
-//                 mScroller.startScroll(0,getScrollY(),0, -layoutHight[2] - getScrollY());
-//                 invalidate();
-//             }
-//
-//        }
-        mScroller.startScroll(0,getScrollY(),0,getCurrentLayout(isSnapDown));
+        mScroller.startScroll(0, getScrollY(), 0, getCurrentLayout(isSnapDown));
         invalidate();
     }
 
 
-
     /**
      * scrollto layout1  layout2 layout3
+     *
      * @param speed
      */
     private void doFling(int speed) {
         if (mScroller == null) {
             return;
         }
-        mScroller.startScroll(0,getScrollY(),0,getCurrentLayout(speed>0?false:true));
-//       mScroller.fling(0, getScrollY(), 0, speed, 0, 0, -(layoutHight[1] + layoutHight[2]), 0);
+        mScroller.startScroll(0, getScrollY(), 0, getCurrentLayout(speed > 0 ? false : true));
         invalidate();
     }
 
@@ -305,18 +338,36 @@ public class PanelBottonLayout extends LinearLayout {
         int scrollY = getScrollY();
         if (isFlingDown) {
             if (scrollY < 0 && scrollY >= -layoutHight[2]) {
+                currentPosition=1;
                 return -layoutHight[2] - getScrollY();
             } else if (scrollY < -layoutHight[2] && scrollY > -(layoutHight[2] + layoutHight[1])) {
+                currentPosition=2;
                 return -(layoutHight[2] + layoutHight[1]) - getScrollY();
             }
         } else {
             if (scrollY < -layoutHight[2] && scrollY >= -(layoutHight[2] + layoutHight[1])) {
+                currentPosition=1;
                 return -layoutHight[2] - getScrollY();
-            }else if (scrollY < 0 && scrollY >= -layoutHight[2]) {
-                return - getScrollY();
+            } else if (scrollY < 0 && scrollY >= -layoutHight[2]) {
+                currentPosition=0;
+                return -getScrollY();
             }
         }
         return 0;
+    }
+    private void snapToPostion(int currentPosition) {
+        switch (currentPosition){
+            case 0:
+                mScroller.startScroll(0, getScrollY(), 0, -getScrollY());
+                break;
+            case 1:
+                mScroller.startScroll(0, getScrollY(), 0, -layoutHight[2] - getScrollY());
+                break;
+            case 2:
+                mScroller.startScroll(0, getScrollY(), 0, -(layoutHight[2] + layoutHight[1]) - getScrollY());
+                break;
+        }
+        invalidate();
     }
 
     private void endDrag() {
@@ -324,7 +375,7 @@ public class PanelBottonLayout extends LinearLayout {
         recycleVelocityTracker();
         mActivePointerId = INVALID_ID;
         mLastY = 0;
-        totalDeltal=0;
+        totalDeltal = 0;
     }
 
     private void requestParentDisallowInterceptTouchEvent() {
@@ -346,4 +397,6 @@ public class PanelBottonLayout extends LinearLayout {
             postInvalidate();
         }
     }
+
+
 }
