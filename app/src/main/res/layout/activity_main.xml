@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
   >
 
-    <com.carpediem.randy.scrollproject.HOverScrollView
+    <com.mx.panneltest.HOverScrollView
         android:layout_width="match_parent"
         android:orientation="vertical"
         android:layout_height="match_parent">
@@ -38,6 +38,6 @@
                 android:layout_height="500dp"
                 android:background="#00ff00"/>
 
-    </com.carpediem.randy.scrollproject.HOverScrollView>
+    </com.mx.panneltest.HOverScrollView>
 
 </RelativeLayout>

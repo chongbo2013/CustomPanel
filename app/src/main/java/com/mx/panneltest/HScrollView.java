@@ -12,7 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.Scroller;
 
 /**
- * Created by randy on 16-3-29.
+ * Created by xff on 2017-2-6 11:33:47
  */
 public class HScrollView extends LinearLayout {
     private final static int INVALID_ID = -1;

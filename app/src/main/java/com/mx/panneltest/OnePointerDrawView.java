@@ -12,7 +12,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 
 /**
- * Created by randy on 16-3-29.
+ * Created by xff on 2017-2-6 11:33:47
  */
 public class OnePointerDrawView extends View {
     private final static int INVALID_ID = -1;

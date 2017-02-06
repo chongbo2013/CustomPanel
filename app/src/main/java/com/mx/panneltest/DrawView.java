@@ -9,7 +9,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 /**
- * Created by randy on 16-3-25.
+ * Created by xff on 2017-2-6 11:33:47
  */
 public class DrawView extends View{
     private Paint mPaint;

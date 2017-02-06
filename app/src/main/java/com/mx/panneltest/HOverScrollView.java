@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.OverScroller;
 
 /**
- * Created by randy on 16-4-5.
+ * Created by xff on 2017-2-6 11:33:47
  */
 public class HOverScrollView extends LinearLayout{
     private final static int INVALID_ID = -1;
@@ -68,7 +68,7 @@ public class HOverScrollView extends LinearLayout{
         mEdgeEffectTop = new EdgeEffectCompat(context);
         //一般来说mOverScrollDistance为0，OverFlingDistance不一致，这里为了整强显示效果
         mOverFlingDistance = 50;
-
+        mOverScrollDistance=50;
         setOverScrollMode(OVER_SCROLL_ALWAYS);
         // 这里还是需要的。overScrollBy中会使用到
         /**
@@ -88,6 +88,7 @@ public class HOverScrollView extends LinearLayout{
     private void recycleVelocityTracker() {
         if (mVelocityTracker != null) {
             mVelocityTracker.recycle();
+            mVelocityTracker = null;
         }
     }
 
@@ -240,7 +241,7 @@ public class HOverScrollView extends LinearLayout{
                     //直接滑动
                     Log.e("TEST","overscroll"+deltaY+" scrollRange"+getScrollRange()+" overScrollDistance"+mOverScrollDistance);
                     overScrollBy(0,(int)deltaY,0,getScrollY(),0,getScrollRange(),0,mOverScrollDistance,true);
-
+                    //scrollBy(0,(int)deltaY);
                     //EdgeEffect
                     final int pulledToY = (int)(getScrollY()+deltaY);
                     mLastY = y;
