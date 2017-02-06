@@ -18,7 +18,7 @@
         android:layout_gravity="bottom"
         android:orientation="vertical">
 
-        <FrameLayout
+        <com.mx.panneltest.TouchFrameLayout
             android:id="@+id/test_layout"
             android:layout_width="match_parent"
             android:layout_height="48dip"
@@ -33,16 +33,16 @@
                android:layout_width="wrap_content"
                android:layout_height="match_parent" />
 
-        </FrameLayout>
+        </com.mx.panneltest.TouchFrameLayout>
 
-        <FrameLayout
+        <com.mx.panneltest.TouchFrameLayout
             android:id="@+id/first_layout"
             android:layout_width="match_parent"
             android:layout_height="0dip"
             android:layout_weight="1"
             android:background="#ffd306" />
 
-        <FrameLayout
+        <com.mx.panneltest.TouchFrameLayout
             android:id="@+id/second_layout"
             android:layout_width="match_parent"
             android:layout_height="0dip"
