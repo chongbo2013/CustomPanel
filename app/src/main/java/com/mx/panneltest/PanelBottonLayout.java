@@ -6,9 +6,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.ViewConfiguration;
-import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.ViewTreeObserver;
 import android.view.animation.Interpolator;
 import android.widget.LinearLayout;
 
@@ -159,6 +157,7 @@ public class PanelBottonLayout extends LinearLayout {
      */
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
+        try{
         final int action = MotionEventCompat.getActionMasked(ev);
         switch (action) {
             case MotionEvent.ACTION_DOWN:
@@ -221,6 +220,9 @@ public class PanelBottonLayout extends LinearLayout {
             default:
         }
         return mIsBeingDragged;
+        }catch(IllegalArgumentException ex) {
+        }
+        return false;
     }
 
     /**
@@ -240,6 +242,8 @@ public class PanelBottonLayout extends LinearLayout {
      */
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+        try{
         if (mScroller == null) {
             return false;
         }
@@ -313,6 +317,9 @@ public class PanelBottonLayout extends LinearLayout {
             mVelocityTracker.addMovement(event);
         }
         return mIsBeingDragged;
+        }catch(IllegalArgumentException ex) {
+        }
+        return false;
     }
 
     private void snapToDestination(boolean isSnapDown) {
